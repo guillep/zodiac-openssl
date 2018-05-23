@@ -66,7 +66,6 @@ ZnOpenSSLSession >> accept: srcBuffer from: from to: to into: dstBuffer [
 	
 	writtenBytes := writeBuffer readInto: dstBuffer size: dstBuffer size.
 	acceptResult > 0 ifTrue: [ state := 3 ].
-	LibC uniqueInstance ERR_GET_ERROR: (LibC uniqueInstance ERR_GET_ERROR) buffer: (ByteArray new: 500).
 	
 	^ (acceptResult < 0 and: [ (self getSSLError: ssl withReturn: acceptResult) ~= SSL_ERROR_WANT_READ "WANT MORE LOVE BABY" ])
 		ifTrue: [ -1 ]

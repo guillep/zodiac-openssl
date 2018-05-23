@@ -57,7 +57,7 @@ ZnBIO >> control: command value: aValue [
 ZnBIO >> errorIfZero: retCode [
 
 	retCode = 0
-		ifTrue: [ ZnOpenSSLError signal: self library getLastErrorString ]
+		ifTrue: [ ZnOpenSSLError signal: self ffiLibraryName getLastErrorString ]
 ]
 
 { #category : #'library path' }

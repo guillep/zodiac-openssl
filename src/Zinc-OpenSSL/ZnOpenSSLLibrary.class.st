@@ -5,6 +5,24 @@ Class {
 }
 
 { #category : #'accessing platform' }
+ZnOpenSSLLibrary >> getLastErrorCode [
+
+	^ self ffiCall: #(int ERR_get_error())
+]
+
+{ #category : #'accessing platform' }
+ZnOpenSSLLibrary >> getLastErrorString [
+
+	^ self getLastErrorStringFromErrorCode: (LibC uniqueInstance ERR_GET_ERROR) buffer: (ByteArray new: 500).
+]
+
+{ #category : #'accessing platform' }
+ZnOpenSSLLibrary >> getLastErrorStringFromErrorCode: anErrorCode buffer: aBuffer [
+
+	^ self ffiCall: #(char* ERR_error_string(ulong anErrorCode, ByteArray aBuffer))
+]
+
+{ #category : #'accessing platform' }
 ZnOpenSSLLibrary >> macModuleName [
 
 	^ self moduleName
