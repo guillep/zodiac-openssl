@@ -136,23 +136,25 @@ ZnOpenSSLSession >> certificateName: aString [
 ZnOpenSSLSession >> connect: srcBuffer from: start to: stop into: dstBuffer [
 	"Start or continue the client handshake using the given input token"
 
-	"Sets up the real session. Lazy"
 	| connectResult writtenBytes |
-	self setup.
-
-	"State in connect handshake"
-	state := 2.
-	self setConnectStateToSsl: ssl.
+	
+	ssl ifNil: [
+		"Sets up the real session. Lazy"
+		self setup.
+		
+		"State in connect handshake"
+		state := 2.
+		
+		self setConnectStateToSsl: ssl.
+	].
 	
 	stop >= start ifTrue: [ | written |
 		written := readBuffer write: (srcBuffer copyFrom: start to: stop).
 		written < stop ifTrue: [ self error: 'Wrote less :/' ].
 	].
 
-	serverName ifNotNil: [ self sslSetHostName: serverName ].
 	connectResult := self sslConnect: ssl.
 	
-	1halt.
 	writtenBytes := writeBuffer readInto: dstBuffer size: dstBuffer size.
 	connectResult > 0 ifTrue: [ state := 3 ].
 	
@@ -165,9 +167,10 @@ ZnOpenSSLSession >> connect: srcBuffer from: start to: stop into: dstBuffer [
 			ifFalse: [ -2 "The caller is verifying < -1" ]].
 		
 	self setVerifyMode: SSL_VERIFY_PEER.
-	"certificate := self getPeerCertificate."
-	self verifyCertificate = X509_V_OK
-		ifFalse: [ self error: 'Invalid certificate' ].
+	self getPeerCertificate.
+	
+	"self verifyCertificate = X509_V_OK
+		ifFalse: [ self error: 'Invalid certificate' ]."
 	^ 0
 ]
 
@@ -188,6 +191,12 @@ ZnOpenSSLSession >> decrypt: srcBuffer from: start to: stop into: dstBuffer [
 		includes: sslError)
 			ifTrue: [ 0 ]
 			ifFalse: [ readResult ]
+]
+
+{ #category : #initialization }
+ZnOpenSSLSession >> destroy [
+	
+	"WHAT?"
 ]
 
 { #category : #accessing }
@@ -262,15 +271,15 @@ ZnOpenSSLSession >> newSSLWithContext: aContext [
 { #category : #operations }
 ZnOpenSSLSession >> newSSLv23Method [
 	
-	"ExternalAddress loadSymbol: #DTLS_method module:'libssl'"
-	^ self ffiCall: #(void *SSLv23_server_method(void)) module: 'libssl'
+	"ExternalAddress loadSymbol: #SSLv23_method module:'libssl'"
+	^ self ffiCall: #(void *SSLv23_method(void))
 ]
 
 { #category : #operations }
 ZnOpenSSLSession >> newTSLMethod [
 	
-	"ExternalAddress loadSymbol: #DTLS_method module:'libssl'"
-	^ self ffiCall: #(void *DTLS_method(void)) module: 'libssl'
+	"ExternalAddress loadSymbol: #TLS_method module:'libssl'"
+	^ self ffiCall: #(void *TLS_method(void))
 ]
 
 { #category : #accessing }
@@ -362,7 +371,7 @@ ZnOpenSSLSession >> setup [
 
 	readBuffer := ZnMemoryBIO new setAutoClose.
 	writeBuffer := ZnMemoryBIO new setAutoClose.
-	method := self newTSLMethod.
+	method := self newSSLv23Method.
 	context := self newSSLContext: method.
 	
 	"SSLv2 and SSLv3 are deprecated"
@@ -375,7 +384,7 @@ ZnOpenSSLSession >> setup [
 		self assert: (self setCertificateFileToContext: context) > 0.
 		self assert: (self setPrivateKeyFileToContext: context) > 0 ].
 	
-	"self setDefaultVerifyPathToContext: context."
+	self assert: (self setDefaultVerifyPathToContext: context) > 0.
 	
 	ssl := self newSSLWithContext: context.
 	self setBioRead: readBuffer handle bioWrite: writeBuffer handle toSSL: ssl.
@@ -401,8 +410,10 @@ ZnOpenSSLSession >> sslRead: eseselele inBuffer: dstBuffer ofSize: bufferSize [
 
 { #category : #operations }
 ZnOpenSSLSession >> sslSetHostName: aServerName [
-
-	^ self ffiCall: #(int SSL_set_tlsext_host_name(void* ssl, char* aServerName))
+	^ self
+		setSSLControlCommand: SSL_CTRL_SET_TLSEXT_HOSTNAME
+		larg: TLSEXT_NAMETYPE_host_name
+		parg: ((aServerName encodeWith: ZnCharacterEncoder utf8) copyWith: 0)
 ]
 
 { #category : #accessing }
