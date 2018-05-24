@@ -5,6 +5,12 @@ Class {
 }
 
 { #category : #'accessing platform' }
+ZnOpenSSLLibrary >> defaultCertificateFile [
+
+	self ffiCall: #(String X509_get_default_cert_file())
+]
+
+{ #category : #'accessing platform' }
 ZnOpenSSLLibrary >> getLastErrorCode [
 
 	^ self ffiCall: #(int ERR_get_error())
