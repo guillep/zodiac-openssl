@@ -25,6 +25,23 @@ Class {
 	#category : #'Zinc-OpenSSL'
 }
 
+{ #category : #installation }
+ZnOpenSSLSession class >> ensureZincPluggableSession [
+
+	(ZnNetworkingUtils hasSlotNamed: #sslSessionClass)
+		ifTrue: [ ^ self ].
+	
+	ZdcSecureSocketStream compile: 'sslSessionClass
+	^ ZnNetworkingUtils default sslSessionClass'.
+	
+	ZnNetworkingUtils addSlot: 'sslSessionClass'.
+	ZnNetworkingUtils compile: 'sslSessionClass
+	^ sslSessionClass ifNil: [ 
+ 		sslSessionClass := Smalltalk globals at: #ZdcPluginSSLSession ifAbsent: [ nil ] ]'.
+	ZnNetworkingUtils compile: 'sslSessionClass: aClass
+		sslSessionClass := aClass'.
+]
+
 { #category : #'class initialization' }
 ZnOpenSSLSession class >> initialize [
 	"self initialize"
@@ -39,6 +56,14 @@ ZnOpenSSLSession class >> initialize [
 	SSL_ERROR_WANT_READ := 2.
 	SSL_ERROR_WANT_X509_LOOKUP := 4.
 	SSL_ERROR_ZERO_RETURN := 6.
+]
+
+{ #category : #installation }
+ZnOpenSSLSession class >> install [
+	<script>
+	"self install"
+	self ensureZincPluggableSession.
+	ZnNetworkingUtils default sslSessionClass: self.
 ]
 
 { #category : #operations }
