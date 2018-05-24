@@ -13,7 +13,7 @@ ZnOpenSSLLibrary >> getLastErrorCode [
 { #category : #'accessing platform' }
 ZnOpenSSLLibrary >> getLastErrorString [
 
-	^ self getLastErrorStringFromErrorCode: (LibC uniqueInstance ERR_GET_ERROR) buffer: (ByteArray new: 500).
+	^ self getLastErrorStringFromErrorCode: self getLastErrorCode buffer: (ByteArray new: 500).
 ]
 
 { #category : #'accessing platform' }
