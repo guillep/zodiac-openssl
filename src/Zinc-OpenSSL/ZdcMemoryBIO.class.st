@@ -1,7 +1,7 @@
 Class {
 	#name : #ZdcMemoryBIO,
 	#superclass : #ZdcBIO,
-	#category : #'Zinc-OpenSSL'
+	#category : #'Zinc-OpenSSL-Core'
 }
 
 { #category : #'initializing/finalizing' }

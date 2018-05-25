@@ -11,7 +11,8 @@ Class {
 		'type',
 		'ssl',
 		'state',
-		'privateKeyName'
+		'privateKeyName',
+		'certificateValidation'
 	],
 	#classVars : [
 		'SSL_CTRL_SET_TLSEXT_HOSTNAME',
@@ -30,8 +31,14 @@ Class {
 		'TLSEXT_NAMETYPE_host_name',
 		'X509_V_OK'
 	],
-	#category : #'Zinc-OpenSSL'
+	#category : #'Zinc-OpenSSL-Core'
 }
+
+{ #category : #'as yet unclassified' }
+ZdcOpenSSLSession class >> X509_V_OK [
+
+	^ X509_V_OK
+]
 
 { #category : #installation }
 ZdcOpenSSLSession class >> ensureZincPluggableSession [
@@ -96,7 +103,7 @@ ZdcOpenSSLSession >> accept: srcBuffer from: start to: stop into: dstBuffer [
 	(acceptResult < 0 and: [ self wantsReadMore: acceptResult ])
 		ifTrue: [ ^ -1 ].
 
-	state := 3.
+	self setConnectedState.
 	^ writeBuffer readInto: dstBuffer size: dstBuffer size
 ]
 
@@ -128,11 +135,8 @@ ZdcOpenSSLSession >> connect: srcBuffer from: start to: stop into: dstBuffer [
 			ifTrue: [ writeBuffer readInto: dstBuffer size: dstBuffer size ]
 			ifFalse: [ -2 ]].
 
-	state := 3.
-	self setVerifyMode: SSL_VERIFY_PEER.
-	self getPeerCertificate.
-	"self verifyCertificate = X509_V_OK
-		ifFalse: [ self error: 'Invalid certificate' ]."
+	self setConnectedState.
+	certificateValidation validateCertificate: self.
 	^ 0
 ]
 
@@ -159,6 +163,12 @@ ZdcOpenSSLSession >> decrypt: srcBuffer from: start to: stop into: dstBuffer [
 ZdcOpenSSLSession >> destroy [
 	
 	"WHAT?"
+]
+
+{ #category : #initialization }
+ZdcOpenSSLSession >> doNotValidateCertificate [
+
+	certificateValidation := ZdcNoCertificateValidation new
 ]
 
 { #category : #accessing }
@@ -213,6 +223,7 @@ ZdcOpenSSLSession >> getSSLErrorForReturnCode: returnCode [
 ZdcOpenSSLSession >> initialize [
 	super initialize.
 	type := SSL_FILETYPE_PEM.
+	self doNotValidateCertificate.
 ]
 
 { #category : #testing }
@@ -342,6 +353,12 @@ ZdcOpenSSLSession >> setConnectStateToSsl: eseselele [
 	^ self ffiCall: #(int SSL_set_connect_state(void* eseselele))
 ]
 
+{ #category : #state }
+ZdcOpenSSLSession >> setConnectedState [
+
+	state := 3
+]
+
 { #category : #primitives }
 ZdcOpenSSLSession >> setControlCommand: command larg: argument parg: pargument toContext: aContext [
 	self
@@ -392,6 +409,12 @@ ZdcOpenSSLSession >> setUp [
 	self setBioRead: readBuffer handle bioWrite: writeBuffer handle toSSL: ssl.
 ]
 
+{ #category : #validations }
+ZdcOpenSSLSession >> setValidatePeer [
+
+	self setVerifyMode: SSL_VERIFY_PEER
+]
+
 { #category : #primitives }
 ZdcOpenSSLSession >> setVerifyMode: aMode [
 	"void SSL_set_verify(SSL *s, int mode, int (*verify_callback)(int, X509_STORE_CTX *));"
@@ -419,6 +442,18 @@ ZdcOpenSSLSession >> sslState [
 ZdcOpenSSLSession >> sslWriteFromBuffer: srcBuffer ofSize: bufferSize [
 	"Call SSL to read the bytes from the source buffer and write them into its internal buffer"
 	^ self ffiCall: #(long SSL_write(void* ssl, ByteArray srcBuffer, ulong bufferSize))
+]
+
+{ #category : #initialization }
+ZdcOpenSSLSession >> validateFullCertificate [
+
+	certificateValidation := ZdcFullCertificateValidation new
+]
+
+{ #category : #initialization }
+ZdcOpenSSLSession >> validateHasCertificate [
+
+	certificateValidation := ZdcHasCertificateValidation new
 ]
 
 { #category : #primitives }

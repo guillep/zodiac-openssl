@@ -6,7 +6,7 @@ Class {
 		'BIO_CTRL_RESET',
 		'BIO_CTRL_SET_CLOSE'
 	],
-	#category : #'Zinc-OpenSSL'
+	#category : #'Zinc-OpenSSL-Core'
 }
 
 { #category : #accessing }

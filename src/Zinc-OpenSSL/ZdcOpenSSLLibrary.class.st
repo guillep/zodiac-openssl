@@ -1,7 +1,7 @@
 Class {
 	#name : #ZdcOpenSSLLibrary,
 	#superclass : #FFILibrary,
-	#category : #'Zinc-OpenSSL'
+	#category : #'Zinc-OpenSSL-Core'
 }
 
 { #category : #'accessing platform' }
