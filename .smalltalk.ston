@@ -3,8 +3,12 @@ SmalltalkCISpec {
   #loading : [
     SCIMetacelloLoadSpec {
       #baseline : 'ZodiacOpenSSL',
-      #platforms : [ #pharo ],
+      #directory : 'src',
+	  #platforms : [ #pharo ],
       #load : [ 'default' ]
      }
   ]
+  #testing : {
+    #packages : [ 'Zodiac-OpenSSL-Tests', 'Zodiac-Tests' ]
+  }
 }
