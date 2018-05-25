@@ -1,11 +1,11 @@
 Class {
-	#name : #ZnMemoryBIO,
-	#superclass : #ZnBIO,
+	#name : #ZdcMemoryBIO,
+	#superclass : #ZdcBIO,
 	#category : #'Zinc-OpenSSL'
 }
 
 { #category : #'initializing/finalizing' }
-ZnMemoryBIO class >> bioAllocationMethod [
+ZdcMemoryBIO class >> bioAllocationMethod [
 	
 	^ self ffiCall: #(void* BIO_s_mem())
 ]

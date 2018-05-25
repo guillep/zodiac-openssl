@@ -1,5 +1,5 @@
 Class {
-	#name : #ZnBIO,
+	#name : #ZdcBIO,
 	#superclass : #FFIOpaqueObject,
 	#classVars : [
 		'BIO_CLOSE',
@@ -10,19 +10,19 @@ Class {
 }
 
 { #category : #accessing }
-ZnBIO class >> bioAllocationMethod [
+ZdcBIO class >> bioAllocationMethod [
 	
 	self subclassResponsibility
 ]
 
 { #category : #'library path' }
-ZnBIO class >> ffiLibraryName [
+ZdcBIO class >> ffiLibraryName [
 
-	^ ZnOpenSSLLibrary
+	^ ZdcOpenSSLLibrary
 ]
 
 { #category : #'class initialization' }
-ZnBIO class >> initialize [
+ZdcBIO class >> initialize [
 	"self initialize"
 	BIO_CTRL_RESET := 1.
 	BIO_CLOSE := 1.
@@ -30,74 +30,74 @@ ZnBIO class >> initialize [
 ]
 
 { #category : #'instance creation' }
-ZnBIO class >> new [
+ZdcBIO class >> new [
 
 	^ self newExternalBio: self bioAllocationMethod
 ]
 
 { #category : #'instance creation' }
-ZnBIO class >> newExternalBio: aMethod [
+ZdcBIO class >> newExternalBio: aMethod [
 
-	^ self ffiCall: #(ZnBIO* BIO_new (void *aMethod))
+	^ self ffiCall: #(#ZdcBIO* BIO_new (void *aMethod))
 ]
 
 { #category : #'initializing/finalizing' }
-ZnBIO >> close [
+ZdcBIO >> close [
 
-	^ self ffiCall: #(int BIO_free(ZnBIO *self))
+	^ self ffiCall: #(int BIO_free(#ZdcBIO *self))
 ]
 
 { #category : #actions }
-ZnBIO >> control: command value: aValue [
+ZdcBIO >> control: command value: aValue [
 
 	^ self ffiCall: #(int BIO_ctrl (ZnBIO *self, int command, long aValue, 0))
 ]
 
 { #category : #actions }
-ZnBIO >> errorIfZero: retCode [
+ZdcBIO >> errorIfZero: retCode [
 
 	retCode = 0
-		ifTrue: [ ZnOpenSSLError signal: self ffiLibraryName getLastErrorString ]
+		ifTrue: [ ZdcOpenSSLError signal: self ffiLibraryName getLastErrorString ]
 ]
 
 { #category : #'library path' }
-ZnBIO >> ffiLibraryName [
+ZdcBIO >> ffiLibraryName [
 
 	^ self class ffiLibraryName
 ]
 
 { #category : #actions }
-ZnBIO >> pendingBytes [
+ZdcBIO >> pendingBytes [
 
 	^ self ffiCall: #(int BIO_ctrl_pending(ZnBIO *self))
 ]
 
 { #category : #'input/output' }
-ZnBIO >> primitiveWrite: aByteArray size: aSize [
+ZdcBIO >> primitiveWrite: aByteArray size: aSize [
 
 	^ self ffiCall: #(int BIO_write (ZnBIO *self, ByteArray aByteArray, int aSize))
 ]
 
 { #category : #'input/output' }
-ZnBIO >> readInto: buffer size: aSize [
+ZdcBIO >> readInto: buffer size: aSize [
 
 	^ self ffiCall: #(int BIO_read(ZnBIO *self, void *buffer, int aSize))
 ]
 
 { #category : #actions }
-ZnBIO >> reset [
+ZdcBIO >> reset [
 	
 	self errorIfZero: (self control: BIO_CTRL_RESET value: 0)
 ]
 
 { #category : #actions }
-ZnBIO >> setAutoClose [
+ZdcBIO >> setAutoClose [
 
 	self errorIfZero: (self control: BIO_CTRL_SET_CLOSE value: BIO_CLOSE)
 ]
 
 { #category : #'input/output' }
-ZnBIO >> write: aByteArray [
+ZdcBIO >> write: aByteArray [
 	
 	^ self primitiveWrite: aByteArray size: aByteArray size
 ]

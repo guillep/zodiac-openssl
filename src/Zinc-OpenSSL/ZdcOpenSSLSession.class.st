@@ -1,5 +1,5 @@
 Class {
-	#name : #ZnOpenSSLSession,
+	#name : #ZdcOpenSSLSession,
 	#superclass : #ZdcAbstractSSLSession,
 	#instVars : [
 		'readBuffer',
@@ -34,7 +34,7 @@ Class {
 }
 
 { #category : #installation }
-ZnOpenSSLSession class >> ensureZincPluggableSession [
+ZdcOpenSSLSession class >> ensureZincPluggableSession [
 
 	(ZnNetworkingUtils hasSlotNamed: #sslSessionClass)
 		ifTrue: [ ^ self ].
@@ -51,7 +51,7 @@ ZnOpenSSLSession class >> ensureZincPluggableSession [
 ]
 
 { #category : #'class initialization' }
-ZnOpenSSLSession class >> initialize [
+ZdcOpenSSLSession class >> initialize [
 	"self initialize"
 	SSL_OP_NO_SSLv2 := 16r00000000.
 	SSL_OP_NO_SSLv3 := 16r02000000.
@@ -76,7 +76,7 @@ ZnOpenSSLSession class >> initialize [
 ]
 
 { #category : #installation }
-ZnOpenSSLSession class >> install [
+ZdcOpenSSLSession class >> install [
 	<script>
 	"self install"
 	self ensureZincPluggableSession.
@@ -84,7 +84,7 @@ ZnOpenSSLSession class >> install [
 ]
 
 { #category : #operations }
-ZnOpenSSLSession >> accept: srcBuffer from: start to: stop into: dstBuffer [ 
+ZdcOpenSSLSession >> accept: srcBuffer from: start to: stop into: dstBuffer [ 
 	| acceptResult |
 
 	self ensureSetupDoing: [ self setAcceptState ].
@@ -101,20 +101,20 @@ ZnOpenSSLSession >> accept: srcBuffer from: start to: stop into: dstBuffer [
 ]
 
 { #category : #accessing }
-ZnOpenSSLSession >> certificateName [
+ZdcOpenSSLSession >> certificateName [
 	"The name of the local certificate to provide to the remote peer"
 
 	^ certificateName
 ]
 
 { #category : #accessing }
-ZnOpenSSLSession >> certificateName: aString [
+ZdcOpenSSLSession >> certificateName: aString [
 	
 	certificateName := aString
 ]
 
 { #category : #operations }
-ZnOpenSSLSession >> connect: srcBuffer from: start to: stop into: dstBuffer [
+ZdcOpenSSLSession >> connect: srcBuffer from: start to: stop into: dstBuffer [
 	| connectResult |
 	
 	self ensureSetupDoing: [ self setConnectState ].
@@ -137,7 +137,7 @@ ZnOpenSSLSession >> connect: srcBuffer from: start to: stop into: dstBuffer [
 ]
 
 { #category : #operations }
-ZnOpenSSLSession >> decrypt: srcBuffer from: start to: stop into: dstBuffer [ 
+ZdcOpenSSLSession >> decrypt: srcBuffer from: start to: stop into: dstBuffer [ 
 
 	| written readResult sslError |
 	written := readBuffer write: (srcBuffer copyFrom: start to: stop).
@@ -156,19 +156,19 @@ ZnOpenSSLSession >> decrypt: srcBuffer from: start to: stop into: dstBuffer [
 ]
 
 { #category : #initialization }
-ZnOpenSSLSession >> destroy [
+ZdcOpenSSLSession >> destroy [
 	
 	"WHAT?"
 ]
 
 { #category : #accessing }
-ZnOpenSSLSession >> enableLogging [
+ZdcOpenSSLSession >> enableLogging [
 
 	
 ]
 
 { #category : #operations }
-ZnOpenSSLSession >> encrypt: srcBuffer from: start to: stop into: dstBuffer [ 
+ZdcOpenSSLSession >> encrypt: srcBuffer from: start to: stop into: dstBuffer [ 
 	
 	| writtenBytes encryptedBytes |
 	writtenBytes := self sslWriteFromBuffer: srcBuffer ofSize: stop.
@@ -183,7 +183,7 @@ ZnOpenSSLSession >> encrypt: srcBuffer from: start to: stop into: dstBuffer [
 ]
 
 { #category : #setup }
-ZnOpenSSLSession >> ensureSetupDoing: aBlock [
+ZdcOpenSSLSession >> ensureSetupDoing: aBlock [
 	
 	"Setup ssl only if not already done"
 	ssl ifNil: [
@@ -192,31 +192,31 @@ ZnOpenSSLSession >> ensureSetupDoing: aBlock [
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> ffiLibraryName [
+ZdcOpenSSLSession >> ffiLibraryName [
 
 	^ 'libssl'
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> getPeerCertificate [
+ZdcOpenSSLSession >> getPeerCertificate [
 
 	^ self ffiCall: #(void* SSL_get_peer_certificate(void* ssl))
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> getSSLErrorForReturnCode: returnCode [
+ZdcOpenSSLSession >> getSSLErrorForReturnCode: returnCode [
 
 	^ self ffiCall: #(int SSL_get_error(void* ssl, int returnCode))
 ]
 
 { #category : #initialization }
-ZnOpenSSLSession >> initialize [
+ZdcOpenSSLSession >> initialize [
 	super initialize.
 	type := SSL_FILETYPE_PEM.
 ]
 
 { #category : #testing }
-ZnOpenSSLSession >> isConnected [
+ZdcOpenSSLSession >> isConnected [
 	"Returns true if the SSL handshake has been completed"
 	"Returns the current state of the SSL connection:
 		0 - Unused
@@ -228,57 +228,57 @@ ZnOpenSSLSession >> isConnected [
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> newSSLContext: aMethod [
+ZdcOpenSSLSession >> newSSLContext: aMethod [
 	
 	^ self ffiCall: #(void *SSL_CTX_new(void* aMethod)) module: 'libssl'
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> newSSLWithContext: aContext [
+ZdcOpenSSLSession >> newSSLWithContext: aContext [
 
 	^ self ffiCall: #(void* SSL_new(void* aContext))
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> newSSLv23Method [
+ZdcOpenSSLSession >> newSSLv23Method [
 	
 	"ExternalAddress loadSymbol: #SSLv23_method module:'libssl'"
 	^ self ffiCall: #(void *SSLv23_method(void))
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> newTSLMethod [
+ZdcOpenSSLSession >> newTSLMethod [
 	
 	"ExternalAddress loadSymbol: #TLS_method module:'libssl'"
 	^ self ffiCall: #(void *TLS_method(void))
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> primitiveAccept [
+ZdcOpenSSLSession >> primitiveAccept [
 
 	^ self ffiCall: #(int SSL_accept(void* ssl))
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> primitiveConnect [
+ZdcOpenSSLSession >> primitiveConnect [
 
 	^ self ffiCall: #(int SSL_connect(void* ssl))
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> primitiveSetAcceptState [
+ZdcOpenSSLSession >> primitiveSetAcceptState [
 
 	^ self ffiCall: #(int SSL_set_accept_state(void* ssl))
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> primitiveSetConnectState [
+ZdcOpenSSLSession >> primitiveSetConnectState [
 
 	^ self ffiCall: #(int SSL_set_connect_state(void* ssl))
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> primitiveSetHostName: aServerName [
+ZdcOpenSSLSession >> primitiveSetHostName: aServerName [
 	^ self
 		setSSLControlCommand: SSL_CTRL_SET_TLSEXT_HOSTNAME
 		larg: TLSEXT_NAMETYPE_host_name
@@ -286,90 +286,90 @@ ZnOpenSSLSession >> primitiveSetHostName: aServerName [
 ]
 
 { #category : #accessing }
-ZnOpenSSLSession >> privateKeyName [
+ZdcOpenSSLSession >> privateKeyName [
 
 	^ privateKeyName
 ]
 
 { #category : #accessing }
-ZnOpenSSLSession >> privateKeyName: aString [
+ZdcOpenSSLSession >> privateKeyName: aString [
 	
 	privateKeyName := aString
 ]
 
 { #category : #accessing }
-ZnOpenSSLSession >> serverName [
+ZdcOpenSSLSession >> serverName [
 	"Get the Server Name Indication (SNI) property"
 	
 	^ serverName
 ]
 
 { #category : #accessing }
-ZnOpenSSLSession >> serverName: aString [
+ZdcOpenSSLSession >> serverName: aString [
 
 	serverName := aString
 ]
 
 { #category : #state }
-ZnOpenSSLSession >> setAcceptState [
+ZdcOpenSSLSession >> setAcceptState [
 
 	self primitiveSetAcceptState.
 	state := 1.
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> setBioRead: bioread bioWrite: biowrite toSSL: eseseele [
+ZdcOpenSSLSession >> setBioRead: bioread bioWrite: biowrite toSSL: eseseele [
 
 	^ self ffiCall: #(int SSL_set_bio(void* eseseele, void* bioread, void* biowrite))
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> setCertificateFileToContext: aContext [
+ZdcOpenSSLSession >> setCertificateFileToContext: aContext [
 
 	^ self ffiCall: #(int SSL_CTX_use_certificate_file(void* aContext, String certificateName, int type))
 ]
 
 { #category : #state }
-ZnOpenSSLSession >> setConnectState [
+ZdcOpenSSLSession >> setConnectState [
 
 	self primitiveSetConnectState.
 	state := 2.
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> setConnectStateToSsl: eseselele [
+ZdcOpenSSLSession >> setConnectStateToSsl: eseselele [
 
 	^ self ffiCall: #(int SSL_set_connect_state(void* eseselele))
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> setControlCommand: command larg: argument parg: pargument toContext: aContext [
+ZdcOpenSSLSession >> setControlCommand: command larg: argument parg: pargument toContext: aContext [
 	self
 		ffiCall: #(ulong SSL_CTX_ctrl #(void * aContext , int command , ulong argument, void * pargument))
 		module: 'libssl'
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> setDefaultVerifyPathToContext: aContext [
+ZdcOpenSSLSession >> setDefaultVerifyPathToContext: aContext [
 
 	^ self ffiCall: #(int SSL_CTX_set_default_verify_paths(void* aContext))
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> setPrivateKeyFileToContext: aContext [
+ZdcOpenSSLSession >> setPrivateKeyFileToContext: aContext [
 
 	^ self ffiCall: #(int SSL_CTX_use_PrivateKey_file(void* aContext, String privateKeyName, int type))
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> setSSLControlCommand: command larg: argument parg: pargument [
+ZdcOpenSSLSession >> setSSLControlCommand: command larg: argument parg: pargument [
 	"SSL_ctrl(s,command,value,(void *)pargument)"
 
 	self ffiCall: #(ulong SSL_ctrl #(void * ssl , int command , ulong argument , void * pargument))
 ]
 
 { #category : #setup }
-ZnOpenSSLSession >> setUp [
+ZdcOpenSSLSession >> setUp [
 
 	method := self newSSLv23Method.
 	context := self newSSLContext: method.
@@ -387,25 +387,25 @@ ZnOpenSSLSession >> setUp [
 	
 	ssl := self newSSLWithContext: context.
 	
-	readBuffer := ZnMemoryBIO new setAutoClose.
-	writeBuffer := ZnMemoryBIO new setAutoClose.
+	readBuffer := ZdcMemoryBIO new setAutoClose.
+	writeBuffer := ZdcMemoryBIO new setAutoClose.
 	self setBioRead: readBuffer handle bioWrite: writeBuffer handle toSSL: ssl.
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> setVerifyMode: aMode [
+ZdcOpenSSLSession >> setVerifyMode: aMode [
 	"void SSL_set_verify(SSL *s, int mode, int (*verify_callback)(int, X509_STORE_CTX *));"
 	^ self ffiCall: #(void SSL_set_verify(void* ssl, int aMode, 0))
 ]
 
 { #category : #'reading-writing' }
-ZnOpenSSLSession >> sslReadIntoBuffer: dstBuffer ofSize: bufferSize [
+ZdcOpenSSLSession >> sslReadIntoBuffer: dstBuffer ofSize: bufferSize [
 	"Call SSL to decrypt the bytes in its internal buffer and put the result in the destination buffer"
 	^ self ffiCall: #(long SSL_read(void* ssl, ByteArray dstBuffer, ulong bufferSize))
 ]
 
 { #category : #accessing }
-ZnOpenSSLSession >> sslState [
+ZdcOpenSSLSession >> sslState [
 	"Returns the current state of the SSL connection:
 		0 - Unused
 		1 - In accept handshake
@@ -416,25 +416,25 @@ ZnOpenSSLSession >> sslState [
 ]
 
 { #category : #'reading-writing' }
-ZnOpenSSLSession >> sslWriteFromBuffer: srcBuffer ofSize: bufferSize [
+ZdcOpenSSLSession >> sslWriteFromBuffer: srcBuffer ofSize: bufferSize [
 	"Call SSL to read the bytes from the source buffer and write them into its internal buffer"
 	^ self ffiCall: #(long SSL_write(void* ssl, ByteArray srcBuffer, ulong bufferSize))
 ]
 
 { #category : #primitives }
-ZnOpenSSLSession >> verifyCertificate [
+ZdcOpenSSLSession >> verifyCertificate [
 	"long SSL_get_verify_result(const SSL *ssl);"
 	^ self ffiCall: #(long SSL_get_verify_result(void* ssl))
 ]
 
 { #category : #testing }
-ZnOpenSSLSession >> wantsReadMore: aReturnCode [
+ZdcOpenSSLSession >> wantsReadMore: aReturnCode [
 
 	^ (self getSSLErrorForReturnCode: aReturnCode) = SSL_ERROR_WANT_READ
 ]
 
 { #category : #'reading-writing' }
-ZnOpenSSLSession >> write: srcBuffer from: from to: to intoBio: aBio [
+ZdcOpenSSLSession >> write: srcBuffer from: from to: to intoBio: aBio [
 	
 	| written |
 	
