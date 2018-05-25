@@ -7,7 +7,7 @@ SmalltalkCISpec {
 	  #platforms : [ #pharo ],
       #load : [ 'default' ]
      }
-  ]
+  ],
   #testing : {
     #packages : [ 'Zodiac-OpenSSL-Tests', 'Zodiac-Tests' ]
   }
