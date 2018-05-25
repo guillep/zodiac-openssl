@@ -50,7 +50,7 @@ ZdcBIO >> close [
 { #category : #actions }
 ZdcBIO >> control: command value: aValue [
 
-	^ self ffiCall: #(int BIO_ctrl (ZnBIO *self, int command, long aValue, 0))
+	^ self ffiCall: #(int BIO_ctrl (self, int command, long aValue, 0))
 ]
 
 { #category : #actions }
@@ -69,19 +69,19 @@ ZdcBIO >> ffiLibraryName [
 { #category : #actions }
 ZdcBIO >> pendingBytes [
 
-	^ self ffiCall: #(int BIO_ctrl_pending(ZnBIO *self))
+	^ self ffiCall: #(int BIO_ctrl_pending(self))
 ]
 
 { #category : #'input/output' }
 ZdcBIO >> primitiveWrite: aByteArray size: aSize [
 
-	^ self ffiCall: #(int BIO_write (ZnBIO *self, ByteArray aByteArray, int aSize))
+	^ self ffiCall: #(int BIO_write (self, ByteArray aByteArray, int aSize))
 ]
 
 { #category : #'input/output' }
 ZdcBIO >> readInto: buffer size: aSize [
 
-	^ self ffiCall: #(int BIO_read(ZnBIO *self, void *buffer, int aSize))
+	^ self ffiCall: #(int BIO_read(self, void *buffer, int aSize))
 ]
 
 { #category : #actions }
