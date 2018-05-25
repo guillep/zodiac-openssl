@@ -1,7 +1,7 @@
 Class {
 	#name : #ZdcNoCertificateValidation,
 	#superclass : #Object,
-	#category : #'Zinc-OpenSSL-CertificateValidations'
+	#category : #'Zodiac-OpenSSL-CertificateValidations'
 }
 
 { #category : #validation }

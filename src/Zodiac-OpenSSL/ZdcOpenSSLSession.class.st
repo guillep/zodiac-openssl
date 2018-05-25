@@ -31,7 +31,7 @@ Class {
 		'TLSEXT_NAMETYPE_host_name',
 		'X509_V_OK'
 	],
-	#category : #'Zinc-OpenSSL-Core'
+	#category : #'Zodiac-OpenSSL-Core'
 }
 
 { #category : #'as yet unclassified' }
