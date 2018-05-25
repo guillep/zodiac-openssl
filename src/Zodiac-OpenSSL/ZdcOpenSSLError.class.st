@@ -1,5 +1,5 @@
 Class {
 	#name : #ZdcOpenSSLError,
 	#superclass : #Error,
-	#category : #'Zinc-OpenSSL-Core'
+	#category : #'Zodiac-OpenSSL-Core'
 }
