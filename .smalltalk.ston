@@ -1,0 +1,10 @@
+SmalltalkCISpec {
+  #name: 'ZodiacOpenSSL',
+  #loading : [
+    SCIMetacelloLoadSpec {
+      #baseline : 'ZodiacOpenSSL',
+      #platforms : [ #pharo ],
+      #load : [ 'default' ]
+     }
+  ]
+}
