@@ -5,6 +5,10 @@ Class {
 }
 
 { #category : #validation }
+ZdcNoCertificateValidation >> configureSSLSession: sslSession [
+]
+
+{ #category : #validation }
 ZdcNoCertificateValidation >> validateCertificate: sslSession [
 
 	"Do Nothing"
