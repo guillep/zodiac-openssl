@@ -467,7 +467,7 @@ ZdcOpenSSLSession >> sslWriteFromBuffer: srcBuffer ofSize: bufferSize [
 { #category : #initialization }
 ZdcOpenSSLSession >> validateFullCertificate [
 
-	certificateValidation := OSPlatform current certificationValidationStrategy new
+	certificateValidation := OSPlatform current openSSLCertificateValidationStrategy new
 ]
 
 { #category : #initialization }
