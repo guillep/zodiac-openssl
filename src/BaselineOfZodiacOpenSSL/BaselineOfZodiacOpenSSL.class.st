@@ -22,9 +22,10 @@ BaselineOfZodiacOpenSSL >> baseline: spec [
 	
 		spec 
 			package: 'Zodiac-OpenSSL';
+			package: 'Zodiac-OpenSSL-Certificates';
 			package: 'Zodiac-OpenSSL-Tests'.
 								
-		spec group: 'default' with: #('Zodiac-OpenSSL' 'Zodiac-OpenSSL-Tests').
+		spec group: 'default' with: #('Zodiac-OpenSSL' 'Zodiac-OpenSSL-Certificates' 'Zodiac-OpenSSL-Tests').
 	 ].		
 
 ]
