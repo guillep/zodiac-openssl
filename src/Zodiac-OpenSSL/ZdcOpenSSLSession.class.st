@@ -223,7 +223,7 @@ ZdcOpenSSLSession >> getSSLErrorForReturnCode: returnCode [
 ZdcOpenSSLSession >> initialize [
 	super initialize.
 	type := SSL_FILETYPE_PEM.
-	self doNotValidateCertificate.
+	self validateFullCertificate.
 ]
 
 { #category : #testing }
@@ -378,6 +378,14 @@ ZdcOpenSSLSession >> setPrivateKeyFileToContext: aContext [
 	^ self ffiCall: #(int SSL_CTX_use_PrivateKey_file(void* aContext, String privateKeyName, int type))
 ]
 
+{ #category : #validation }
+ZdcOpenSSLSession >> setRootCertificateLocation: aPathString [
+
+	aPathString asFileReference isDirectory
+		ifTrue: [ self sslLoadVerifyPath: aPathString ]
+		ifFalse: [ self sslLoadVerifyFile: aPathString ]
+]
+
 { #category : #primitives }
 ZdcOpenSSLSession >> setSSLControlCommand: command larg: argument parg: pargument [
 	"SSL_ctrl(s,command,value,(void *)pargument)"
@@ -407,6 +415,8 @@ ZdcOpenSSLSession >> setUp [
 	readBuffer := ZdcMemoryBIO new setAutoClose.
 	writeBuffer := ZdcMemoryBIO new setAutoClose.
 	self setBioRead: readBuffer handle bioWrite: writeBuffer handle toSSL: ssl.
+	
+	certificateValidation configureSSLSession: self
 ]
 
 { #category : #validations }
@@ -419,6 +429,16 @@ ZdcOpenSSLSession >> setValidatePeer [
 ZdcOpenSSLSession >> setVerifyMode: aMode [
 	"void SSL_set_verify(SSL *s, int mode, int (*verify_callback)(int, X509_STORE_CTX *));"
 	^ self ffiCall: #(void SSL_set_verify(void* ssl, int aMode, 0))
+]
+
+{ #category : #validations }
+ZdcOpenSSLSession >> sslLoadVerifyFile: aPath [ 
+	self ffiCall: #(int SSL_CTX_load_verify_locations(void *context, String aPath, 0))
+]
+
+{ #category : #validations }
+ZdcOpenSSLSession >> sslLoadVerifyPath: aPath [ 
+	self ffiCall: #(int SSL_CTX_load_verify_locations(void *context, 0, String aPath))
 ]
 
 { #category : #'reading-writing' }
@@ -447,7 +467,7 @@ ZdcOpenSSLSession >> sslWriteFromBuffer: srcBuffer ofSize: bufferSize [
 { #category : #initialization }
 ZdcOpenSSLSession >> validateFullCertificate [
 
-	certificateValidation := ZdcFullCertificateValidation new
+	certificateValidation := OSPlatform current openSSLCertificateValidationStrategy new
 ]
 
 { #category : #initialization }

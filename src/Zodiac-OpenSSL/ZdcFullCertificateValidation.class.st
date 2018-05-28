@@ -5,9 +5,13 @@ Class {
 }
 
 { #category : #validation }
-ZdcFullCertificateValidation >> validateCertificate: sslSession [
+ZdcFullCertificateValidation >> configureSSLSession: sslSession [
+	sslSession setValidatePeer
+]
 
-	sslSession setValidatePeer.
-	sslSession verifyCertificate = sslSession  X509_V_OK
+{ #category : #validation }
+ZdcFullCertificateValidation >> validateCertificate: sslSession [
+	
+	sslSession verifyCertificate = sslSession class X509_V_OK
 		ifFalse: [ self error: 'Invalid certificate' ].
 ]
