@@ -231,7 +231,7 @@ ZdcOpenSSLSession >> getSSLErrorForReturnCode: returnCode [
 ZdcOpenSSLSession >> initialize [
 	super initialize.
 	type := SSL_FILETYPE_PEM.
-	self validateHasCertificate.
+	self validateFullCertificate.
 ]
 
 { #category : #testing }
