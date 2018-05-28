@@ -489,7 +489,7 @@ ZdcOpenSSLSession >> validateHasCertificate [
 { #category : #primitives }
 ZdcOpenSSLSession >> verifyCertificate [
 	"long SSL_get_verify_result(const SSL *ssl);"
-	^ self ffiCall: #(long SSL_get_verify_result(void* ssl))
+	^ self ffiCall: #(long SSL_get_verify_result(void* ssl)) module: ZdcOpenSSLExLibrary
 ]
 
 { #category : #testing }
