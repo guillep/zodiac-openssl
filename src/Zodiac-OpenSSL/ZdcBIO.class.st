@@ -21,6 +21,18 @@ ZdcBIO class >> ffiLibraryName [
 	^ ZdcOpenSSLLibrary
 ]
 
+{ #category : #finalization }
+ZdcBIO class >> finalizeResourceData: handle [
+	handle isNull ifTrue: [ ^ self ].
+	self freeBIO: handle.
+	handle beNull
+]
+
+{ #category : #'initialization-release' }
+ZdcBIO class >> freeBIO: aHandler [
+	self ffiCall: #(int BIO_free(void* aHandler))
+]
+
 { #category : #'class initialization' }
 ZdcBIO class >> initialize [
 	"self initialize"
@@ -31,8 +43,9 @@ ZdcBIO class >> initialize [
 
 { #category : #'instance creation' }
 ZdcBIO class >> new [
-
-	^ self newExternalBio: self bioAllocationMethod
+	^ (self newExternalBio: self bioAllocationMethod)
+		autoRelease;
+		yourself
 ]
 
 { #category : #'instance creation' }

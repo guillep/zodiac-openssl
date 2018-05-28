@@ -210,7 +210,7 @@ ZdcOpenSSLSession >> ffiLibraryName [
 { #category : #primitives }
 ZdcOpenSSLSession >> getPeerCertificate [
 
-	^ self ffiCall: #(void* SSL_get_peer_certificate(void* ssl))
+	^ self ffiCall: #(ZdcX509Certificate* SSL_get_peer_certificate(void* ssl))
 ]
 
 { #category : #primitives }
@@ -498,4 +498,9 @@ ZdcOpenSSLSession >> write: srcBuffer from: from to: to intoBio: aBio [
 	
 	written := aBio write: (srcBuffer copyFrom: from to: to).
 	written < to ifTrue: [ self error: 'Wrote less :/' ].
+]
+
+{ #category : #accessing }
+ZdcOpenSSLSession >> x509CertificateStore [
+	^ self ffiCall: #(ZdcX509CertificateStore *SSL_CTX_get_cert_store(void* context))
 ]
