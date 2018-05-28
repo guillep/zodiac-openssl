@@ -31,23 +31,17 @@ ZdcOpenSSLLibrary >> getLastErrorStringFromErrorCode: anErrorCode buffer: aBuffe
 { #category : #'accessing platform' }
 ZdcOpenSSLLibrary >> macModuleName [
 
-	^ self moduleName
-]
-
-{ #category : #'accessing platform' }
-ZdcOpenSSLLibrary >> moduleName [
-
 	^ 'libssl'
 ]
 
 { #category : #'accessing platform' }
 ZdcOpenSSLLibrary >> unixModuleName [
 
-	^ self moduleName
+	^ 'libssl'
 ]
 
 { #category : #'accessing platform' }
 ZdcOpenSSLLibrary >> win32ModuleName [
 
-	^ self moduleName
+	^ 'libeay32'
 ]
