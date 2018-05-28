@@ -15,6 +15,35 @@ ZdcWinCertificateStore class >> initialize [
 ]
 
 { #category : #'as yet unclassified' }
+ZdcWinCertificateStore >> certificatesFromStoreNamed: storeName [
+
+	| sysStore cert results buffer |
+	
+	results := OrderedCollection new.
+	
+	[
+		sysStore := self
+			openStore: CERT_STORE_PROV_SYSTEM_A
+			flags: CERT_SYSTEM_STORE_CURRENT_USER
+			parameter: storeName.
+		
+		sysStore isNull ifTrue: [ self error: 'Unable to open key store ', storeName ].
+
+		cert := ZdcWinCertificateContext fromHandle: ExternalAddress null.
+		[(cert := self ffiCertEnumCertificates: cert inStore: sysStore) isNull ] whileFalse: [
+			buffer := ByteArray new: cert cbCertEncoded.
+			LibC memCopy: cert pbCertEncoded to: buffer size: buffer size.
+			results add: (ZdcX509Certificate newEmpty fromDER: buffer; yourself).
+		].
+		^ results asArray.
+	] ensure: [ 
+		sysStore isNull ifFalse: [ self closeStore: sysStore ]
+	].	
+	
+	
+]
+
+{ #category : #'as yet unclassified' }
 ZdcWinCertificateStore >> closeStore: aStore [
 
 	^ self ffiCall: #(bool CertCloseStore(void* aStore, 0))
@@ -40,29 +69,5 @@ ZdcWinCertificateStore >> openStore: storeProvider flags: flags parameter: pvPar
 { #category : #'as yet unclassified' }
 ZdcWinCertificateStore >> rootCertificates [
 
-	| sysStore cert results buffer |
-	
-	self halt.
-	results := OrderedCollection new.
-	
-	[
-		sysStore := self
-			openStore: CERT_STORE_PROV_SYSTEM_A
-			flags: CERT_SYSTEM_STORE_CURRENT_USER
-			parameter: 'root'.
-		
-		sysStore isNull ifTrue: [ self error: 'Unable to open key store' ].
-
-		cert := ZdcWinCertificateContext fromHandle: ExternalAddress null.
-		[(cert := self ffiCertEnumCertificates: cert inStore: sysStore) isNull ] whileFalse: [
-			buffer := ByteArray new: cert cbCertEncoded.
-			LibC memCopy: cert pbCertEncoded to: buffer size: buffer size.
-			results add: (ZdcX509Certificate newEmpty fromDER: buffer; yourself).
-		].
-		^ results asArray.
-	] ensure: [ 
-		sysStore isNull ifFalse: [ self closeStore: sysStore ]
-	].	
-	
-	
+	^ (self certificatesFromStoreNamed: 'root') , (self certificatesFromStoreNamed: 'CA')
 ]
