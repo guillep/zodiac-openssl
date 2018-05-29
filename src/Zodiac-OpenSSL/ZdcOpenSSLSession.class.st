@@ -15,6 +15,7 @@ Class {
 		'certificateValidation'
 	],
 	#classVars : [
+		'SSL_CTRL_Options',
 		'SSL_CTRL_SET_TLSEXT_HOSTNAME',
 		'SSL_ERROR_WANT_READ',
 		'SSL_ERROR_WANT_X509_LOOKUP',
@@ -79,7 +80,9 @@ ZdcOpenSSLSession class >> initialize [
 	SSL_VERIFY_POST_HANDSHAKE := 8.
 	
 	SSL_CTRL_SET_TLSEXT_HOSTNAME := 55.
-	TLSEXT_NAMETYPE_host_name := 0
+	TLSEXT_NAMETYPE_host_name := 0.
+	
+	SSL_CTRL_Options := 32
 ]
 
 { #category : #installation }
@@ -141,7 +144,11 @@ ZdcOpenSSLSession >> connect: srcBuffer from: start to: stop into: dstBuffer [
 	connectResult <= 0 ifTrue: [ 
 		^ (self wantsReadMore: connectResult)
 			ifTrue: [ writeBuffer readInto: dstBuffer size: dstBuffer size ]
-			ifFalse: [ -2 ]].
+			ifFalse: [ 
+				self flag:#todo.
+				"This is performed in this ugly way, as the client code is not intended to handle exceptions. A better way should be performed"
+				('SSL Error:' , (self getSSLErrorForReturnCode: -1) printString , ZdcOpenSSLLibrary uniqueInstance getLastErrorString) logCr. 
+				 ^ -2 ]].
 
 	self setConnectedState.
 	certificateValidation validateCertificate: self.
@@ -379,6 +386,13 @@ ZdcOpenSSLSession >> setDefaultVerifyPathToContext: aContext [
 ]
 
 { #category : #primitives }
+ZdcOpenSSLSession >> setOptions: optionFlaggish toContext: aContext [
+
+	"ExternalAddress loadSymbol: #'SSL_CTX_ctrl' module:'libssl'"
+	^ self setControlCommand: SSL_CTRL_Options larg: optionFlaggish parg: ExternalAddress null toContext: aContext
+]
+
+{ #category : #primitives }
 ZdcOpenSSLSession >> setPrivateKeyFileToContext: aContext [
 
 	^ self ffiCall: #(int SSL_CTX_use_PrivateKey_file(void* aContext, String privateKeyName, int type))
@@ -408,7 +422,7 @@ ZdcOpenSSLSession >> setUp [
 	self assert: context isNull not.
 	
 	"SSLv2 and SSLv3 are deprecated"
-	"self setOptions: SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 toContext: context."
+	self setOptions: SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 toContext: context.
 	
 	certificateName ifNotNil: [
 		self setCertificateFileToContext: context ].
@@ -425,6 +439,8 @@ ZdcOpenSSLSession >> setUp [
 	readBuffer := ZdcMemoryBIO new setAutoClose.
 	writeBuffer := ZdcMemoryBIO new setAutoClose.
 	self setBioRead: readBuffer handle bioWrite: writeBuffer handle toSSL: ssl.
+	
+	serverName ifNotNil: [ self primitiveSetHostName: serverName ].
 	
 	certificateValidation configureSSLSession: self
 ]
