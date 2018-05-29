@@ -88,6 +88,14 @@ ZdcOpenSSLSession class >> install [
 	"self install"
 	self ensureZincPluggableSession.
 	ZnNetworkingUtils default sslSessionClass: self.
+	
+	SessionManager default registerSystemClassNamed: self name
+]
+
+{ #category : #'system startup' }
+ZdcOpenSSLSession class >> startUp: isStarting [
+	isStarting
+		ifTrue: [ ZdcOpenSSLExLibrary uniqueInstance initSSL ]
 ]
 
 { #category : #operations }
@@ -204,19 +212,19 @@ ZdcOpenSSLSession >> ensureSetupDoing: aBlock [
 { #category : #primitives }
 ZdcOpenSSLSession >> ffiLibraryName [
 
-	^ 'libssl'
+	^ ZdcOpenSSLLibrary 
 ]
 
 { #category : #primitives }
 ZdcOpenSSLSession >> getPeerCertificate [
 
-	^ self ffiCall: #(void* SSL_get_peer_certificate(void* ssl))
+	^ self ffiCall: #(ZdcX509Certificate* SSL_get_peer_certificate(void* ssl)) module: ZdcOpenSSLExLibrary
 ]
 
 { #category : #primitives }
 ZdcOpenSSLSession >> getSSLErrorForReturnCode: returnCode [
 
-	^ self ffiCall: #(int SSL_get_error(void* ssl, int returnCode))
+	^ self ffiCall: #(int SSL_get_error(void* ssl, int returnCode)) module: ZdcOpenSSLExLibrary
 ]
 
 { #category : #initialization }
@@ -241,20 +249,20 @@ ZdcOpenSSLSession >> isConnected [
 { #category : #primitives }
 ZdcOpenSSLSession >> newSSLContext: aMethod [
 	
-	^ self ffiCall: #(void *SSL_CTX_new(void* aMethod)) module: 'libssl'
+	^ self ffiCall: #(void *SSL_CTX_new(void* aMethod)) module: ZdcOpenSSLExLibrary
 ]
 
 { #category : #primitives }
 ZdcOpenSSLSession >> newSSLWithContext: aContext [
 
-	^ self ffiCall: #(void* SSL_new(void* aContext))
+	^ self ffiCall: #(void* SSL_new(void* aContext)) module: ZdcOpenSSLExLibrary
 ]
 
 { #category : #primitives }
 ZdcOpenSSLSession >> newSSLv23Method [
 	
 	"ExternalAddress loadSymbol: #SSLv23_method module:'libssl'"
-	^ self ffiCall: #(void *SSLv23_method(void))
+	^ self ffiCall: #(void *SSLv23_method(void)) module: ZdcOpenSSLExLibrary
 ]
 
 { #category : #primitives }
@@ -273,7 +281,7 @@ ZdcOpenSSLSession >> primitiveAccept [
 { #category : #primitives }
 ZdcOpenSSLSession >> primitiveConnect [
 
-	^ self ffiCall: #(int SSL_connect(void* ssl))
+	^ self ffiCall: #(int SSL_connect(void* ssl)) module: ZdcOpenSSLExLibrary
 ]
 
 { #category : #primitives }
@@ -285,7 +293,7 @@ ZdcOpenSSLSession >> primitiveSetAcceptState [
 { #category : #primitives }
 ZdcOpenSSLSession >> primitiveSetConnectState [
 
-	^ self ffiCall: #(int SSL_set_connect_state(void* ssl))
+	^ self ffiCall: #(int SSL_set_connect_state(void* ssl)) module: ZdcOpenSSLExLibrary
 ]
 
 { #category : #primitives }
@@ -331,7 +339,7 @@ ZdcOpenSSLSession >> setAcceptState [
 { #category : #primitives }
 ZdcOpenSSLSession >> setBioRead: bioread bioWrite: biowrite toSSL: eseseele [
 
-	^ self ffiCall: #(int SSL_set_bio(void* eseseele, void* bioread, void* biowrite))
+	^ self ffiCall: #(int SSL_set_bio(void* eseseele, void* bioread, void* biowrite)) module: ZdcOpenSSLExLibrary
 ]
 
 { #category : #primitives }
@@ -361,15 +369,13 @@ ZdcOpenSSLSession >> setConnectedState [
 
 { #category : #primitives }
 ZdcOpenSSLSession >> setControlCommand: command larg: argument parg: pargument toContext: aContext [
-	self
-		ffiCall: #(ulong SSL_CTX_ctrl #(void * aContext , int command , ulong argument, void * pargument))
-		module: 'libssl'
+	self ffiCall: #(ulong SSL_CTX_ctrl #(void * aContext , int command , ulong argument , void * pargument))
 ]
 
 { #category : #primitives }
 ZdcOpenSSLSession >> setDefaultVerifyPathToContext: aContext [
 
-	^ self ffiCall: #(int SSL_CTX_set_default_verify_paths(void* aContext))
+	^ self ffiCall: #(int SSL_CTX_set_default_verify_paths(void* aContext)) module: ZdcOpenSSLExLibrary
 ]
 
 { #category : #primitives }
@@ -399,6 +405,8 @@ ZdcOpenSSLSession >> setUp [
 	method := self newSSLv23Method.
 	context := self newSSLContext: method.
 	
+	self assert: context isNull not.
+	
 	"SSLv2 and SSLv3 are deprecated"
 	"self setOptions: SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 toContext: context."
 	
@@ -407,10 +415,12 @@ ZdcOpenSSLSession >> setUp [
 	
 	privateKeyName ifNotNil: [
 		self setPrivateKeyFileToContext: context ].
-	
+		
 	self assert: (self setDefaultVerifyPathToContext: context) > 0.
 	
 	ssl := self newSSLWithContext: context.
+	
+	self assert: ssl isNull not.
 	
 	readBuffer := ZdcMemoryBIO new setAutoClose.
 	writeBuffer := ZdcMemoryBIO new setAutoClose.
@@ -444,7 +454,7 @@ ZdcOpenSSLSession >> sslLoadVerifyPath: aPath [
 { #category : #'reading-writing' }
 ZdcOpenSSLSession >> sslReadIntoBuffer: dstBuffer ofSize: bufferSize [
 	"Call SSL to decrypt the bytes in its internal buffer and put the result in the destination buffer"
-	^ self ffiCall: #(long SSL_read(void* ssl, ByteArray dstBuffer, ulong bufferSize))
+	^ self ffiCall: #(long SSL_read(void* ssl, ByteArray dstBuffer, ulong bufferSize)) module: ZdcOpenSSLExLibrary
 ]
 
 { #category : #accessing }
@@ -461,7 +471,7 @@ ZdcOpenSSLSession >> sslState [
 { #category : #'reading-writing' }
 ZdcOpenSSLSession >> sslWriteFromBuffer: srcBuffer ofSize: bufferSize [
 	"Call SSL to read the bytes from the source buffer and write them into its internal buffer"
-	^ self ffiCall: #(long SSL_write(void* ssl, ByteArray srcBuffer, ulong bufferSize))
+	^ self ffiCall: #(long SSL_write(void* ssl, ByteArray srcBuffer, ulong bufferSize)) module: ZdcOpenSSLExLibrary
 ]
 
 { #category : #initialization }
@@ -479,7 +489,7 @@ ZdcOpenSSLSession >> validateHasCertificate [
 { #category : #primitives }
 ZdcOpenSSLSession >> verifyCertificate [
 	"long SSL_get_verify_result(const SSL *ssl);"
-	^ self ffiCall: #(long SSL_get_verify_result(void* ssl))
+	^ self ffiCall: #(long SSL_get_verify_result(void* ssl)) module: ZdcOpenSSLExLibrary
 ]
 
 { #category : #testing }
@@ -498,4 +508,9 @@ ZdcOpenSSLSession >> write: srcBuffer from: from to: to intoBio: aBio [
 	
 	written := aBio write: (srcBuffer copyFrom: from to: to).
 	written < to ifTrue: [ self error: 'Wrote less :/' ].
+]
+
+{ #category : #accessing }
+ZdcOpenSSLSession >> x509CertificateStore [
+	^ self ffiCall: #(ZdcX509CertificateStore *SSL_CTX_get_cert_store(void* context)) module: ZdcOpenSSLExLibrary
 ]
