@@ -1,3 +1,15 @@
+"
+I represent a X509 certificate name in openSSL.
+
+I am an opaque external object. 
+I should be used through the functions exposed in OpenSSL.
+
+If you keep a reference to me take care that I am nulled when the image is closed. 
+So maybe you don't want to keep a reference to me.
+
+I am obtained from a X509 certificate, the certificate has 2 names the subject name and issuer name.
+I know how to return a string representation of myself. Check #fullString and #nameString.
+"
 Class {
 	#name : #ZdcX509Name,
 	#superclass : #FFIOpaqueObject,
@@ -10,7 +22,7 @@ Class {
 		'XN_FLAG_SEP_MULTILINE',
 		'XN_FLAG_SPC_EQ'
 	],
-	#category : #'Zodiac-OpenSSL-Certificates'
+	#category : #'Zodiac-OpenSSL-Certificates-Base'
 }
 
 { #category : #resources }

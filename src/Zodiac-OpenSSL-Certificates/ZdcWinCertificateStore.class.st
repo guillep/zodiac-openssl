@@ -1,3 +1,8 @@
+"
+I implement the access to the Windows operating system certificate store.
+
+I should be used calling #rootCertificate that returns ZdcX509Certificates
+"
 Class {
 	#name : #ZdcWinCertificateStore,
 	#superclass : #Object,
@@ -28,12 +33,14 @@ ZdcWinCertificateStore >> certificatesFromStoreNamed: storeName [
 			parameter: storeName.
 		
 		sysStore isNull ifTrue: [ self error: 'Unable to open key store ', storeName ].
-
+	
+		"I create a null certificate to send as first request. Subsequent request are called with the previous value."
 		cert := ZdcWinCertificateContext fromHandle: ExternalAddress null.
+		
 		[(cert := self ffiCertEnumCertificates: cert inStore: sysStore) isNull ] whileFalse: [
 			buffer := ByteArray new: cert cbCertEncoded.
 			LibC memCopy: cert pbCertEncoded to: buffer size: buffer size.
-			results add: (ZdcX509Certificate newEmpty fromDER: buffer; yourself).
+			results add: (ZdcX509Certificate newFromDER: buffer).
 		].
 		^ results asArray.
 	] ensure: [ 
@@ -52,6 +59,15 @@ ZdcWinCertificateStore >> closeStore: aStore [
 { #category : #'as yet unclassified' }
 ZdcWinCertificateStore >> ffiCertEnumCertificates: cert inStore: sysStore [
 
+	"The CertEnumCertificatesInStore function retrieves the first or next certificate in a certificate store. 
+	Used in a loop, this function can retrieve in sequence all certificates in a certificate store.
+	
+	If the function succeeds, the function returns a pointer to the next CERT_CONTEXT in the store. If no more certificates exist in the store, the function returns NULL.
+	The returned pointer is freed when passed as the pPrevCertContext parameter on a subsequent call. 
+	Otherwise, the pointer must be freed by calling CertFreeCertificateContext. A non-NULL pPrevCertContext passed to CertEnumCertificatesInStore is always freed even for an error.
+	
+	Source: https://msdn.microsoft.com/en-us/library/windows/desktop/aa376050(v=vs.85).aspx
+	"
 	^ self ffiCall: #(ZdcWinCertificateContext* CertEnumCertificatesInStore(void* sysStore, ZdcWinCertificateContext* cert))
 ]
 

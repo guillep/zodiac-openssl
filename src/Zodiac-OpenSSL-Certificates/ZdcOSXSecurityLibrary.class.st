@@ -1,3 +1,6 @@
+"
+I am the FFILibrary for the Security framework in OSX
+"
 Class {
 	#name : #ZdcOSXSecurityLibrary,
 	#superclass : #FFILibrary,

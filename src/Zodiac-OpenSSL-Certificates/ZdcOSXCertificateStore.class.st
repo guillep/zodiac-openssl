@@ -1,3 +1,8 @@
+"
+I implement the access to the OSX operating system certificate store.
+
+I should be used calling #rootCertificate that returns ZdcX509Certificates
+"
 Class {
 	#name : #ZdcOSXCertificateStore,
 	#superclass : #Object,
@@ -90,9 +95,7 @@ ZdcOSXCertificateStore >> toX509: ptrToSecCertificateRef [
 
 		LibC uniqueInstance memCopy: rawData to: buffer size: length.
 
-		^ ZdcX509Certificate newEmpty
-			fromDER: buffer;
-			yourself 
+		^ ZdcX509Certificate newFromDER: buffer.
 	] ensure: [ 
 		certData isNull
 				ifFalse: [ ZdcOSXSecurityLibrary uniqueInstance releaseHandle: certData ].

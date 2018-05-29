@@ -1,3 +1,12 @@
+"
+I represent the CERT_CONTEXT structure, used in Windows Certificate Store calls.
+
+The CERT_CONTEXT structure contains both the encoded and decoded representations of a certificate. 
+A certificate context returned by one of the functions defined in Wincrypt.h must be freed by calling the CertFreeCertificateContext function. 
+The CertDuplicateCertificateContext function can be called to make a duplicate copy (which also must be freed by calling CertFreeCertificateContext).
+
+https://msdn.microsoft.com/en-us/library/windows/desktop/aa377189(v=vs.85).aspx
+"
 Class {
 	#name : #ZdcWinCertificateContext,
 	#superclass : #FFIExternalStructure,

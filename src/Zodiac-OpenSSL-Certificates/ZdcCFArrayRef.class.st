@@ -1,3 +1,7 @@
+"
+I wrap a Objective C Array, I only implement the minimum logic that is needed to access the certificate store.
+Remember that the Array is zero based.
+"
 Class {
 	#name : #ZdcCFArrayRef,
 	#superclass : #FFIOpaqueObject,

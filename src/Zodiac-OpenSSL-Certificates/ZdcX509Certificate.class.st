@@ -1,10 +1,22 @@
+"
+I represent a X509 certificate in openSSL.
+
+I am an opaque external object. 
+I should be used through the functions exposed in OpenSSL.
+
+If you keep a reference to me take care that I am nulled when the image is closed. 
+So maybe you don't want to keep a reference to me.
+
+I can be get from OpenSSL, get from one of the operating system stores or create from 
+a PEM or DER format. Check my class side methods.
+"
 Class {
 	#name : #ZdcX509Certificate,
 	#superclass : #FFIOpaqueObject,
 	#classVars : [
 		'X509_PTR'
 	],
-	#category : #'Zodiac-OpenSSL-Certificates'
+	#category : #'Zodiac-OpenSSL-Certificates-Base'
 }
 
 { #category : #resources }
@@ -38,10 +50,24 @@ ZdcX509Certificate class >> initialize [
 	X509_PTR := FFIExternalValueHolder ofType: 'ZdcX509Certificate*'. 
 ]
 
-{ #category : #finalization }
+{ #category : #'instance creation' }
 ZdcX509Certificate class >> newEmpty [
 	^ (self fromHandle: self ffiNewX509)
 		autoRelease;
+		yourself
+]
+
+{ #category : #'instance creation' }
+ZdcX509Certificate class >> newFromDER: buffer [
+	^ ZdcX509Certificate newEmpty
+		fromDER: buffer;
+		yourself
+]
+
+{ #category : #'instance creation' }
+ZdcX509Certificate class >> newFromPEM: aString [
+	^ ZdcX509Certificate newEmpty
+		fromPEM: aString;
 		yourself
 ]
 
