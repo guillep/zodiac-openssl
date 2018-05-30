@@ -28,13 +28,13 @@ ZdcOpenSSLLibrary >> getErrorLib: anErrorCode [
 ZdcOpenSSLLibrary >> getErrorReason: anErrorCode [ 
 
 	"# define ERR_GET_REASON(l)       (int)( (l)         & 0xFFFL)"
-	^ anErrorCode & 16rFFFF
+	^ anErrorCode & 16rFFF
 ]
 
 { #category : #'accessing platform' }
 ZdcOpenSSLLibrary >> getLastErrorCode [
 
-	^ self ffiCall: #(int ERR_get_error())
+	^ self ffiCall: #(ulong ERR_get_error())
 ]
 
 { #category : #'accessing platform' }
