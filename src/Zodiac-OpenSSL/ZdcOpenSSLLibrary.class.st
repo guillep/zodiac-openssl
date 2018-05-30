@@ -10,6 +10,27 @@ ZdcOpenSSLLibrary >> defaultCertificateFile [
 	self ffiCall: #(String X509_get_default_cert_file())
 ]
 
+{ #category : #errors }
+ZdcOpenSSLLibrary >> getErrorFunction: anErrorCode [ 
+
+	"# define ERR_GET_FUNC(l)         (int)(((l) >> 12L) & 0xFFFL)"
+	^ anErrorCode >> 12 & 16rFFF
+]
+
+{ #category : #errors }
+ZdcOpenSSLLibrary >> getErrorLib: anErrorCode [ 
+
+	"# define ERR_GET_LIB(l)          (int)(((l) >> 24L) & 0x0FFL)"
+	^ anErrorCode >> 24 & 16rFF
+]
+
+{ #category : #errors }
+ZdcOpenSSLLibrary >> getErrorReason: anErrorCode [ 
+
+	"# define ERR_GET_REASON(l)       (int)( (l)         & 0xFFFL)"
+	^ anErrorCode & 16rFFFF
+]
+
 { #category : #'accessing platform' }
 ZdcOpenSSLLibrary >> getLastErrorCode [
 

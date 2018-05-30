@@ -131,6 +131,16 @@ ZdcOpenSSLSession >> certificateName: aString [
 	certificateName := aString
 ]
 
+{ #category : #accessing }
+ZdcOpenSSLSession >> certificateValidation [
+	^ certificateValidation
+]
+
+{ #category : #accessing }
+ZdcOpenSSLSession >> certificateValidation: anObject [
+	certificateValidation := anObject
+]
+
 { #category : #operations }
 ZdcOpenSSLSession >> connect: srcBuffer from: start to: stop into: dstBuffer [
 	| connectResult |

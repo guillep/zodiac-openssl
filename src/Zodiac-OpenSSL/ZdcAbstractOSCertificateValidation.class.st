@@ -37,8 +37,13 @@ ZdcAbstractOSCertificateValidation >> cachedCertificates [
 
 { #category : #validation }
 ZdcAbstractOSCertificateValidation >> configureSSLSession: sslSession [
+
 	| rootCertificates store |
+	
 	store := sslSession x509CertificateStore.
 	rootCertificates := self cachedCertificates.
-	rootCertificates do: [ :aCert | self assert: (store addCertificate: aCert) = 1 ]
+	rootCertificates do: [ :aCert | store addCertificate: aCert ].
+	
+	super configureSSLSession: sslSession.
+
 ]
