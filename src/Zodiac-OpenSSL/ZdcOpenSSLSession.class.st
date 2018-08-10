@@ -479,8 +479,9 @@ ZdcOpenSSLSession >> sslLoadVerifyPath: aPath [
 
 { #category : #'reading-writing' }
 ZdcOpenSSLSession >> sslReadIntoBuffer: dstBuffer ofSize: bufferSize [
-	"Call SSL to decrypt the bytes in its internal buffer and put the result in the destination buffer"
-	^ self ffiCall: #(long SSL_read(void* ssl, ByteArray dstBuffer, ulong bufferSize)) module: ZdcOpenSSLExLibrary
+	"Call SSL to decrypt the bytes in its internal buffer and put the result in the destination buffer."
+
+	^ self ffiCall: #(int SSL_read(void *ssl, ByteArray dstBuffer, int bufferSize)) module: ZdcOpenSSLExLibrary
 ]
 
 { #category : #accessing }
